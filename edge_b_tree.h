@@ -15,9 +15,7 @@ class EdgeBTreeBlock {
   // PrintBlock
   void PrintBlock();
 
-  void EraseBlock();
-
-  size_t len;
+  size_t size;
   bool is_leaf;
   locint *ind;
   double *weight;
