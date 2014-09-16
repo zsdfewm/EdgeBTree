@@ -53,7 +53,7 @@ void EdgeBTreeBlock::PrintBlock() {
     if (!is_leaf) {
       printf("%x, ", child_block[i]);
     }
-    printf("%<%d, %10.5f>, ", ind[i], weight[i]);
+    printf("<%d, %.5f>, ", ind[i], weight[i]);
   }
   if (!is_leaf) {
     printf("%x", child_block[len]);
@@ -89,6 +89,8 @@ double* EdgeBTree::find(locint index) {
 
   while (true) {
     if (curr_block->len == EdgeBTreeBlockSize) {
+//      printf("splitting block[%x]:\n",curr_block);
+//      fflush(stdout);
       //split two blocks;
       EdgeBTreeBlock *new_block = new EdgeBTreeBlock();
       size_t i,j;
@@ -106,21 +108,27 @@ double* EdgeBTree::find(locint index) {
 
       new_block->len = EdgeBTreeBlockSizeT;
       curr_block->len = EdgeBTreeBlockSizeT;
-
+//      curr_block->PrintBlock();
+//      new_block->PrintBlock();
+//      fflush(stdout);
       // put mid to prev block
       locint mid_ind = curr_block->ind[EdgeBTreeBlockSizeT];
       curr_block->ind[EdgeBTreeBlockSizeT] = 0;
       double mid_weight = curr_block->weight[EdgeBTreeBlockSizeT];
       curr_block->weight[EdgeBTreeBlockSizeT] = 0.0;
 
-      if (prev_block = NULL) {
+//      printf("mid_ind=%d, mid_weight=%.5f\n", mid_ind, mid_weight);
+//      fflush(stdout);
+      if (prev_block == NULL) {
         //Build a new root;
         root_block = new EdgeBTreeBlock();
         root_block->ind[0] = mid_ind;
         root_block->weight[0] = mid_weight;
         root_block->child_block[0] = curr_block;
-        root_block->chile_block[1] = new_block;
+        root_block->child_block[1] = new_block;
         root_block->len = 1;
+//        root_block->PrintBlock();
+//        fflush(stdout);
       } else {
         size_t i;
         prev_block->len++;
@@ -131,7 +139,7 @@ double* EdgeBTree::find(locint index) {
         }
         prev_block->ind[prev_ind] = mid_ind;
         prev_block->weight[prev_ind] = mid_weight;
-        prev_block->weight[prev_ind+1] = new_block;
+        prev_block->child_block[prev_ind+1] = new_block;
       }
       if (mid_ind == index) {
         return &prev_block->weight[prev_ind];
@@ -169,9 +177,9 @@ double* EdgeBTree::find(locint index) {
 void EdgeBTree::ToArray(size_t *len, locint **ind, double **weight) {
 
   (*ind) = (locint*) malloc(sizeof(locint) * size);
-  (*weight) = (locint*) malloc(sizeof(locint) * size);
+  (*weight) = (double*) malloc(sizeof(double) * size);
   *len=0;
-  root->AppendToArray(len, *ind, *weight);
+  root_block->AppendToArray(len, *ind, *weight);
   if (*len != size) {
     fprintf(stderr, "FATAL ERROR: EdgeBTree Broken!\n");
     exit(-1);
@@ -182,11 +190,3 @@ void EdgeBTree::Print() {
   root_block->PrintBlock();
 }
 
-int main() {
-  //test edge_b_tree;
-  EdgeBTree *edge_b_tree = new EdgeBTree();
-  for(size_t i=0; i<10;i++) {
-    edge_b_tree->update(i,-1.0*i);
-  }
-  edge_b_tree->Print();
-}
