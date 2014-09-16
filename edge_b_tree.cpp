@@ -15,19 +15,23 @@ EdgeBTreeBlock::EdgeBTreeBlock() {
 }
 
 EdgeBTreeBlock::~EdgeBTreeBlock() {
-  free(ind);
-  free(weight);
-  free(child_block);
-}
-
-void EdgeBTreeBlock::EraseBlock() {
   int i;
+  printf("deleting %x:\n", this);
+  fflush(stdout);
   for(i=0;i<=len;i++) {
-    if (child_block[i] != NULL && !is_leaf) {
-      child_block[i]->EraseBlock();
+    if (!is_leaf) {
       delete child_block[i];
     }
   }
+  printf("done %x\n", this);
+  fflush(stdout);
+//  free(ind);
+//  free(weight);
+//  free(child_block);
+}
+
+void EdgeBTreeBlock::EraseBlock() {
+
 }
 void EdgeBTreeBlock::AppendToArray(size_t *len_array, locint *ind_array, double *weight_array) {
   for(size_t i = 0; i < len; i++) {
@@ -68,7 +72,6 @@ EdgeBTree::EdgeBTree() {
 }
 
 EdgeBTree::~EdgeBTree() {
-  root_block->EraseBlock();
   delete root_block;
 }
 
@@ -148,7 +151,7 @@ double* EdgeBTree::find(locint index) {
       }
     }
     prev_ind=0;
-    while(curr_block->ind[prev_ind] < index && prev_ind < curr_block->len) {
+    while(prev_ind < curr_block->len && curr_block->ind[prev_ind] < index) {
       prev_ind++;
     }
     if (prev_ind != curr_block->len && curr_block->ind[prev_ind] == index) {
@@ -157,7 +160,7 @@ double* EdgeBTree::find(locint index) {
     if (curr_block->is_leaf) {
       curr_block->len++;
       size_t i;
-      for(i = curr_block->len; i > prev_ind; i--) {
+      for(i = curr_block->len; i > prev_ind && i > 0; i--) {
         curr_block->ind[i] = curr_block->ind[i-1];
         curr_block->weight[i] = curr_block->weight[i-1];
       }
